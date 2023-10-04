@@ -36,7 +36,8 @@ The mean total number of steps taken per day is `r s_mean` steps
 The median total number of steps taken per day is `r s_median` steps  
 
 ## What is the average daily activity pattern?
-
+Make a time series plot
+ggplot(df, aes(x=interval, y=steps))+ geom_line()
 
 
 ## Imputing missing values
