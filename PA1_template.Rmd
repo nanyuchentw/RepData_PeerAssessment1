@@ -6,13 +6,34 @@ output:
 ---
 
 
-## Loading and preprocessing the data
+### Set the environment before data processing
+```{r, message=FALSE, warning=FALSE, results='hide'}
+library(tidyverse)
+local <- Sys.getlocale("LC_TIME")
+Sys.setlocale("LC_ALL", "English") 
+```
 
+
+## Loading and processing data from the zipped file
+```{r, echo=TRUE}
+con <- unz("activity.zip", "activity.csv")
+df <- read.csv(con)
+df$date <- ymd(df$date)
+```
 
 
 ## What is mean total number of steps taken per day?
+1. Histogram of the total number of steps taken each day
+```{r, echo=TRUE}
+df1 <- df %>% group_by(date) %>% summarise(Total_steps=sum(steps, na.rm = T))
+ggplot(df1, aes(x=date, y= Total_steps))+ geom_col()
+s_mean= mean(df1$Total_steps)
+s_median= median(df1$Total_steps)
 
-
+```
+2. Report results  
+The mean total number of steps taken per day is `r s_mean` steps   
+The median total number of steps taken per day is `r s_median` steps  
 
 ## What is the average daily activity pattern?
 
@@ -23,3 +44,11 @@ output:
 
 
 ## Are there differences in activity patterns between weekdays and weekends?
+
+
+
+
+### Set the environment back
+```{r, results='hide'}
+Sys.setlocale(locale=local)
+```
