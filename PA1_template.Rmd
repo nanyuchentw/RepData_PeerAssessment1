@@ -17,7 +17,14 @@ Sys.setlocale("LC_ALL", "English")
 ## Loading and processing data from the zipped file
 ```{r, echo=TRUE}
 con <- unz("activity.zip", "activity.csv")
-df <- read.csv(con)
+ori_df <- read.csv(con)
+df <- ori_df
+
+#change the intervals to time
+df$interval <- as.character(df$interval)
+df$interval <- df$interval %>% str_pad(width = 4, side = "left", pad = "0")
+df <- df %>% mutate(datetime= paste(date,interval)) 
+df$datetime <- ymd_hm(df$datetime)
 df$date <- ymd(df$date)
 ```
 
@@ -25,26 +32,81 @@ df$date <- ymd(df$date)
 ## What is mean total number of steps taken per day?
 1. Histogram of the total number of steps taken each day
 ```{r, echo=TRUE}
-df1 <- df %>% group_by(date) %>% summarise(Total_steps=sum(steps, na.rm = T))
-ggplot(df1, aes(x=date, y= Total_steps))+ geom_col()
-s_mean= mean(df1$Total_steps)
-s_median= median(df1$Total_steps)
+p <- df %>% group_by(date) %>% summarise(Total_steps=sum(steps, na.rm = T))
+ggplot(p, aes(x=date, y= Total_steps))+ geom_col()
+s_mean= mean(p$Total_steps)
+s_median= median(p$Total_steps)
 
 ```
-2. Report results  
+2. Results:  
 The mean total number of steps taken per day is `r s_mean` steps   
 The median total number of steps taken per day is `r s_median` steps  
 
 ## What is the average daily activity pattern?
+1. In 5-minute interval
+```{r}
+ggplot(df, aes(x= datetime, y=steps))+ geom_line()
 
+```
 
+2. Which 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps?
+```{r}
+x <- df[which(df$steps== max(df$steps, na.rm=T)),]
+x
+```
+Result: The `r x[, 2:3]` interval contains the maximum number of steps.
 
 ## Imputing missing values
+1. Calculate and report the total number of missing values in the dataset (i.e. the total number of rows with NAs)
+```{r}
+total_NA <- sum(is.na(df))
 
+```
+Results:
+The total number of NAs in the dataset is `r total_NA`
 
+2. Use the mean steps for that day to fill in all of the missing values in the dataset. 
+
+```{r}
+df2 <- df %>% group_by(date) %>% summarise(day_mean=mean(steps, na.rm = ))
+df2$date <- ymd(df2$date)
+df2 <- left_join(df, df2, by="date")
+
+for (i in 1:nrow(df2)){
+        if (is.na(df2$steps[i]))  {
+                if (is.na(df2$day_mean[i])){
+                        df2$steps[i] <- 0
+                }else {
+                        df2$steps[i] <- df2$day_mean[i]
+                }
+        }else{
+                next
+        }
+}
+
+new_df <- ori_df
+new_df$steps <- df2$steps
+# this new_df is the same as the original dataset except the Nas are filled
+new_df$date <- ymd(new_df$date)
+p <- new_df %>% group_by(date) %>% summarise(Total_steps=sum(steps, na.rm = T))
+ggplot(p, aes(x=date, y= Total_steps))+ geom_col()
+s_mean= mean(p$Total_steps)
+s_median= median(p$Total_steps)
+
+```
+Results:  
+1. The new dataframe I make is called new_df. It's the same as the original dataset except the Nas in column steps are filled  
+2. The calculated mean for the new dataset is `r s_mean`.  
+   The calculated median for the new dataset is `r s_median`  
+3. The way I used to fill the missing value by either the mean steps of the day or 0 if the value of the whole day is missing, basically produces the same result as the original dataset.  
 
 ## Are there differences in activity patterns between weekdays and weekends?
 
+```{r}
+df$steps <- new_df$steps
+
+
+```
 
 
 
