@@ -6,9 +6,10 @@ output:
 ---
 
 
-### Set the environment before data processing
+## Set the environment before data processing
 ```{r, message=FALSE, warning=FALSE, results='hide'}
 library(tidyverse)
+library(lattice)
 local <- Sys.getlocale("LC_TIME")
 Sys.setlocale("LC_ALL", "English") 
 ```
@@ -30,50 +31,50 @@ df$date <- ymd(df$date)
 
 
 ## What is mean total number of steps taken per day?
-1. Histogram of the total number of steps taken each day
+**Histogram of the total number of steps taken each day**
 ```{r, echo=TRUE}
 p <- df %>% group_by(date) %>% summarise(Total_steps=sum(steps, na.rm = T))
-ggplot(p, aes(x=date, y= Total_steps))+ geom_col()
+ggplot(data=p, aes(x=date, y=Total_steps))+ geom_col()
+
 s_mean= mean(p$Total_steps)
 s_median= median(p$Total_steps)
-
 ```
-2. Results:  
+**Results**  
 The mean total number of steps taken per day is `r s_mean` steps   
 The median total number of steps taken per day is `r s_median` steps  
 
 ## What is the average daily activity pattern?
-<<<<<<< HEAD
-Make a time series plot
-ggplot(df, aes(x=interval, y=steps))+ geom_line()
-=======
-1. In 5-minute interval
+**In 5-minute interval**  
 ```{r}
-ggplot(df, aes(x= datetime, y=steps))+ geom_line()
-
+View(df)
+df$interval <- as.numeric(df$interval)
+p <- df %>% group_by(interval) %>% summarise(Average_steps= mean(steps, na.rm =TRUE))
+ggplot(p, aes(x=interval, y=Average_steps))+ geom_line()
+#if use lattice
+#xyplot(Average_steps~interval, data = p)
 ```
->>>>>>> 913a4d7bda720d710078fabfda3714b9a0c8d991
 
-2. Which 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps?
+**Which 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps?**  
 ```{r}
-x <- df[which(df$steps== max(df$steps, na.rm=T)),]
+x <- p[which(p$Average_steps== max(p$Average_steps)),]
 x
 ```
-Result: The `r x[, 2:3]` interval contains the maximum number of steps.
+**Result:**  
+The `r x[, 1]` interval contains the maximum number `r x[,2]` of steps.
 
 ## Imputing missing values
-1. Calculate and report the total number of missing values in the dataset (i.e. the total number of rows with NAs)
+**Calculate and report the total number of missing values in the dataset (i.e. the total number of rows with NAs)**  
 ```{r}
 total_NA <- sum(is.na(df))
 
 ```
-Results:
+**Results:**  
 The total number of NAs in the dataset is `r total_NA`
 
-2. Use the mean steps for that day to fill in all of the missing values in the dataset. 
+**Use the mean steps for that day to fill in all of the missing values in the dataset.**  
 
 ```{r}
-df2 <- df %>% group_by(date) %>% summarise(day_mean=mean(steps, na.rm = ))
+df2 <- df %>% group_by(date) %>% summarise(day_mean=mean(steps, na.rm = TRUE))
 df2$date <- ymd(df2$date)
 df2 <- left_join(df, df2, by="date")
 
@@ -97,25 +98,40 @@ p <- new_df %>% group_by(date) %>% summarise(Total_steps=sum(steps, na.rm = T))
 ggplot(p, aes(x=date, y= Total_steps))+ geom_col()
 s_mean= mean(p$Total_steps)
 s_median= median(p$Total_steps)
-
+s_mean
+s_median
 ```
-Results:  
-1. The new dataframe I make is called new_df. It's the same as the original dataset except the Nas in column steps are filled  
-2. The calculated mean for the new dataset is `r s_mean`.  
-   The calculated median for the new dataset is `r s_median`  
+**Results:**  
+1. The new dataframe I make is called new_df. It's the same as the original dataset except the NAs in column steps are filled  
+2. The calculated mean for the new dataset is `r s_mean`  
+The calculated median for the new dataset is `r s_median`    
 3. The way I used to fill the missing value by either the mean steps of the day or 0 if the value of the whole day is missing, basically produces the same result as the original dataset.  
 
 ## Are there differences in activity patterns between weekdays and weekends?
 
 ```{r}
+#Make the weekend/weekday indicator (factor)
 df$steps <- new_df$steps
+df <- df %>% mutate (week_day= ifelse(wday(date)== 7| wday(date)==1, "weekend", "weekday"))
+df$week_day <- factor(df$week_day, levels=c("weekday", "weekend"))
 
 
+#Comparing weekends and weekdays on the average of steps with 5-minute interval
+p <- df %>% group_by(interval, week_day) %>% summarise(Average_steps= mean(steps))
+View(p)
+ggplot(p, aes(x=interval, y=Average_steps))+ geom_line()+ facet_grid(week_day~.)
+
+#if use lattice
+# xyplot(Average_steps~interval|week_day, data=p, type='l', layout=c(1, 2),
+#        scales=list(x=list(at=c(0500, 1000, 1500, 2000), labels=c(500, 1000, 1500, 2000))))
 ```
+  
+**Results:**  
+There is greater variation of activities (steps) in weekdays than on weekends, with
+the highest average total steps in a 5-minute interval happened in the morning of weekdays around interval 800-900.  
 
 
-
-### Set the environment back
+## Set the environment back
 ```{r, results='hide'}
 Sys.setlocale(locale=local)
 ```
