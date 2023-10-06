@@ -22,19 +22,13 @@ Sys.setlocale("LC_ALL", "English")
 con <- unz("activity.zip", "activity.csv")
 ori_df <- read.csv(con)
 df <- ori_df
-
-#change the intervals to time
-df$interval <- as.character(df$interval)
-df$interval <- df$interval %>% str_pad(width = 4, side = "left", pad = "0")
-df <- df %>% mutate(datetime= paste(date,interval)) 
-df$datetime <- ymd_hm(df$datetime)
-df$date <- ymd(df$date)
 ```
 
 
 ## What is mean total number of steps taken per day?
 **Histogram of the total number of steps taken each day**
 ```{r, echo=TRUE}
+df$date <- ymd(df$date)
 p <- df %>% group_by(date) %>% summarise(Total_steps=sum(steps, na.rm = T))
 hist(p$Total_steps, breaks = 30, xlab="Total number of steps taken in a day", 
      main = "Histogram of the total number of steps taken in a day")
@@ -51,9 +45,9 @@ The median total number of steps taken per day is `r s_median` steps
 ```{r}
 df$interval <- as.numeric(df$interval)
 p <- df %>% group_by(interval) %>% summarise(Average_steps= mean(steps, na.rm =TRUE))
-ggplot(p, aes(x=interval, y=Average_steps))+ geom_line()
-#if use lattice
-#xyplot(Average_steps~interval, data = p)
+
+#ggplot(p, aes(x=interval, y=Average_steps))+ geom_line()
+xyplot(Average_steps~interval, data = p, type="l")
 ```
 
 **Which 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps?**  
@@ -97,7 +91,8 @@ new_df$steps <- df2$steps
 # this new_df is the same as the original dataset except the Nas are filled
 new_df$date <- ymd(new_df$date)
 p <- new_df %>% group_by(date) %>% summarise(Total_steps=sum(steps, na.rm = T))
-ggplot(p, aes(x=date, y= Total_steps))+ geom_col()
+hist(p$Total_steps, breaks = 30, xlab="Total number of steps taken in a day", 
+     main = "Histogram of the total number of steps taken in a day")
 s_mean= mean(p$Total_steps)
 s_median= median(p$Total_steps)
 s_mean
@@ -121,11 +116,11 @@ df$week_day <- factor(df$week_day, levels=c("weekday", "weekend"))
 #Comparing weekends and weekdays on the average of steps with 5-minute interval
 p <- df %>% group_by(interval, week_day) %>% summarise(Average_steps= mean(steps))
 
-ggplot(p, aes(x=interval, y=Average_steps))+ geom_line()+ facet_grid(week_day~.)
+#if use ggplot
+# ggplot(p, aes(x=interval, y=Average_steps))+ geom_line()+ facet_grid(week_day~.)
 
-#if use lattice
-# xyplot(Average_steps~interval|week_day, data=p, type='l', layout=c(1, 2),
-#        scales=list(x=list(at=c(0500, 1000, 1500, 2000), labels=c(500, 1000, 1500, 2000))))
+xyplot(Average_steps~interval|week_day, data=p, type='l', layout=c(1, 2),
+       scales=list(x=list(at=c(0500, 1000, 1500, 2000), labels=c(500, 1000, 1500, 2000))))
 ```
   
 **Results:**  
