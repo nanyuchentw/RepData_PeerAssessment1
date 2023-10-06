@@ -36,7 +36,8 @@ df$date <- ymd(df$date)
 **Histogram of the total number of steps taken each day**
 ```{r, echo=TRUE}
 p <- df %>% group_by(date) %>% summarise(Total_steps=sum(steps, na.rm = T))
-ggplot(data=p, aes(x=date, y=Total_steps))+ geom_col()
+hist(p$Total_steps, breaks = 30, xlab="Total number of steps taken in a day", 
+     main = "Histogram of the total number of steps taken in a day")
 
 s_mean= mean(p$Total_steps)
 s_median= median(p$Total_steps)
