@@ -3,6 +3,8 @@ title: "Reproducible Research: Peer Assessment 1"
 output: 
   html_document:
     keep_md: true
+editor_options: 
+  chunk_output_type: console
 ---
 
 
@@ -46,7 +48,6 @@ The median total number of steps taken per day is `r s_median` steps
 ## What is the average daily activity pattern?
 **In 5-minute interval**  
 ```{r}
-View(df)
 df$interval <- as.numeric(df$interval)
 p <- df %>% group_by(interval) %>% summarise(Average_steps= mean(steps, na.rm =TRUE))
 ggplot(p, aes(x=interval, y=Average_steps))+ geom_line()
@@ -118,7 +119,7 @@ df$week_day <- factor(df$week_day, levels=c("weekday", "weekend"))
 
 #Comparing weekends and weekdays on the average of steps with 5-minute interval
 p <- df %>% group_by(interval, week_day) %>% summarise(Average_steps= mean(steps))
-View(p)
+
 ggplot(p, aes(x=interval, y=Average_steps))+ geom_line()+ facet_grid(week_day~.)
 
 #if use lattice
