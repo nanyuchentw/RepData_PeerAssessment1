@@ -33,7 +33,7 @@ df <- ori_df
 ```r
 df$date <- ymd(df$date)
 p <- df %>% group_by(date) %>% summarise(Total_steps=sum(steps, na.rm = T))
-hist(p$Total_steps, breaks = 30, xlab="Total number of steps taken in a day", 
+hist(p$Total_steps, breaks = 20, xlab="Total number of steps taken in a day", 
      main = "Histogram of the total number of steps taken in a day")
 ```
 
@@ -54,7 +54,7 @@ The median total number of steps taken per day is 10395 steps
 df$interval <- as.numeric(df$interval)
 p <- df %>% group_by(interval) %>% summarise(Average_steps= mean(steps, na.rm =TRUE))
 
-#ggplot(p, aes(x=interval, y=Average_steps))+ geom_line()
+#or use ggplot(p, aes(x=interval, y=Average_steps))+ geom_line()
 xyplot(Average_steps~interval, data = p, type="l")
 ```
 
@@ -64,6 +64,7 @@ xyplot(Average_steps~interval, data = p, type="l")
 
 ```r
 x <- p[which(p$Average_steps== max(p$Average_steps)),]
+# or just use x <- p[which.max(p$Average_steps),]
 x
 ```
 
@@ -110,7 +111,7 @@ new_df$steps <- df2$steps
 # this new_df is the same as the original dataset except the Nas are filled
 new_df$date <- ymd(new_df$date)
 p <- new_df %>% group_by(date) %>% summarise(Total_steps=sum(steps, na.rm = T))
-hist(p$Total_steps, breaks = 30, xlab="Total number of steps taken in a day", 
+hist(p$Total_steps, breaks = 20, xlab="Total number of steps taken in a day", 
      main = "Histogram of the total number of steps taken in a day")
 ```
 
